@@ -66,6 +66,7 @@ export interface RadioStation {
   title: string
   description: string
   url: string
+  homepageUrl: string
 }
 
 export interface PodcastEpisode {
@@ -344,10 +345,11 @@ export class API {
       .map(this.normalizeRadioStation, this)
   }
 
-  async addRadioStation(title: string, url: string): Promise<RadioStation> {
+  async addRadioStation(title: string, url: string, homepageUrl: string): Promise<RadioStation> {
     const params = {
       name: title,
       streamUrl: url,
+      homepageUrl
     }
     return this
       .fetch('rest/createInternetRadioStation', params)
@@ -356,9 +358,10 @@ export class API {
 
   async updateRadioStation(item: RadioStation): Promise<RadioStation> {
     const params = {
-      id: item.id,
+      id: item.id.replace('radio-', ''),
       name: item.title,
       streamUrl: item.url,
+      homepageUrl: item.homepageUrl
     }
     return this
       .fetch('rest/updateInternetRadioStation', params)
@@ -366,7 +369,7 @@ export class API {
   }
 
   async deleteRadioStation(id: string): Promise<void> {
-    return this.fetch('rest/deleteInternetRadioStation', { id })
+    return this.fetch('rest/deleteInternetRadioStation', { id: id.replace('radio-', '') })
   }
 
   async getFilesRoot(): Promise<FileDirectory> {
@@ -447,6 +450,7 @@ export class API {
       album: item.name,
       track: item.track,
       url: item.streamUrl,
+      homepageUrl: item.homepageUrl,
       duration: 0,
       favourite: false,
       isStream: true,
