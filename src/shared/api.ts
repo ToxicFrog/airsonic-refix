@@ -25,6 +25,7 @@ export interface Track {
   isPodcast?: boolean
   isUnavailable?: boolean
   playCount? : number
+  podcastStatus? : string
 }
 
 export interface Album {
@@ -426,6 +427,14 @@ export class API {
     return this.fetch('rest/refreshPodcasts')
   }
 
+  async downloadPodcastEpisode(id: string): Promise<any> {
+    return this.fetch('rest/downloadPodcastEpisode', { id })
+  }
+
+  async deletePodcastEpisode(id: string): Promise<any> {
+    return this.fetch('rest/deletePodcastEpisode', { id })
+  }
+
   async deletePodcast(id: string): Promise<any> {
     return this.fetch('rest/deletePodcastChannel', { id })
   }
@@ -543,6 +552,7 @@ export class API {
         artistId: undefined,
         image,
         isPodcast: true,
+        podcastStatus: item.status,
         isUnavailable: item.status !== 'completed' || !item.streamId,
         url: item.status === 'completed' && item.streamId
           ? this.getStreamUrl(item.streamId)

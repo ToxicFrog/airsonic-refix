@@ -10,7 +10,7 @@
     fill="currentColor"
     preserveAspectRatio="xMidYMid meet"
     viewBox="0 0 16 16"
-    class="bi icon"
+    :class="{'bi icon': true, 'spin': spin}"
     v-bind="$attrs"
     v-html="path"
   />
@@ -89,7 +89,8 @@
 
   export default defineComponent({
     props: {
-      icon: { type: String, required: true }
+      icon: { type: String, required: true },
+      spin: { type: Boolean, default: false }
     },
     computed: {
       path(): string {
@@ -116,5 +117,10 @@
   .nav-link .icon.bi {
     font-size: 125%;
     vertical-align: text-bottom;
+  }
+
+  .spin {
+    transform-origin: center;
+    animation: b-icon-animation-spin 2s linear infinite normal;
   }
 </style>
