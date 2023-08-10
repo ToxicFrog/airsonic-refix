@@ -1,6 +1,7 @@
 import { AuthService } from '@/auth/service'
 import { map, max, orderBy, uniq } from 'lodash-es'
 import { toQueryString } from '@/shared/utils'
+import sanitizeHtml from 'sanitize-html'
 
 export type AlbumSort =
   'a-z' |
@@ -25,7 +26,6 @@ export interface Track {
   isPodcast?: boolean
   isUnavailable?: boolean
   playCount? : number
-  podcastStatus? : string
 }
 
 export interface Album {
@@ -74,6 +74,18 @@ export interface PodcastEpisode {
   id: string
   title: string
   description: string
+  episodeStatus? : string
+}
+
+export interface Podcast {
+  id: string
+  name: string
+  description: string
+  image: string
+  url: string
+  trackCount: number,
+  updatedAt: string,
+  tracks: (Track & PodcastEpisode)[]
 }
 
 export interface Playlist {
@@ -409,12 +421,12 @@ export class API {
     })
   }
 
-  async getPodcasts(): Promise<any[]> {
+  async getPodcasts(): Promise<Podcast[]> {
     const response = await this.fetch('rest/getPodcasts')
     return (response?.podcasts?.channel || []).map(this.normalizePodcast, this)
   }
 
-  async getPodcast(id: string): Promise<any> {
+  async getPodcast(id: string): Promise<Podcast> {
     const response = await this.fetch('rest/getPodcasts', { id })
     return this.normalizePodcast(response?.podcasts?.channel[0])
   }
@@ -529,13 +541,13 @@ export class API {
     }
   }
 
-  private normalizePodcast(podcast: any): any {
+  private normalizePodcast(podcast: any): Podcast {
     const image = podcast.originalImageUrl
     const episodes = podcast.episode || []
     return {
       id: podcast.id,
       name: podcast.title || podcast.url,
-      description: podcast.description,
+      description: sanitizeHtml(podcast.description),
       image,
       url: podcast.url,
       trackCount: episodes.length,
@@ -552,12 +564,12 @@ export class API {
         artistId: undefined,
         image,
         isPodcast: true,
-        podcastStatus: item.status,
+        episodeStatus: item.status,
         isUnavailable: item.status !== 'completed' || !item.streamId,
         url: item.status === 'completed' && item.streamId
           ? this.getStreamUrl(item.streamId)
           : undefined,
-        description: item.description,
+        description: sanitizeHtml(item.description, { allowedTags: [], allowedAttributes: {}, allowedStyles: {} }),
         playCount: item.playCount || 0,
       })),
     }
