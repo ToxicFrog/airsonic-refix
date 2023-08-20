@@ -31,7 +31,7 @@
             :draggable="true" @dragstart="onDragStart(index, item.id, $event)"
             @dragenter.prevent @dragover="onDragOver($event)" @drop="onDrop(index, item, $event)"
             @click="play(index)">
-          <CellTrackNumber :active="index === queueIndex && isPlaying" :value="item.track" />
+          <CellTrackNumber :active="index === queueIndex && isPlaying" :value="index + 1" />
           <CellTitle :track="item" />
           <CellArtist :track="item" />
           <CellAlbum :track="item" />
