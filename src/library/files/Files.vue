@@ -21,20 +21,10 @@
         </b-button>
       </span>
     </div>
-    <BaseTable>
-      <BaseTableHead />
-      <tbody class="text-break">
-        <template v-if="files.id">
-          <tr @click="pathPop()">
-            <td>
-              <Icon icon="folder" />
-            </td>
-            <td colspan="2">
-              ..
-            </td>
-          </tr>
-        </template>
-        <template v-if="files.dirs">
+    <template v-if="files.dirs">
+      <BaseTable>
+        <thead><tr><th></th><slot /><th class="text-left">Directories</th></tr></thead>
+        <tbody class="text-break">
           <tr v-for="item in files.dirs" :key="item.id" @click="pathPush(item.id)">
             <td>
               <Icon icon="folder" />
@@ -43,16 +33,16 @@
               {{ item.name }}
             </td>
           </tr>
-        </template>
-        <template v-if="files.files">
-          <tr v-for="item in files.files" :key="item.id" :class="{'active': item.id === playingTrackId}" @click="playTrack(item)">
-            <CellTrackNumber :active="item.id === playingTrackId && isPlaying" :value="item.track" />
-            <CellTitle :track="item" />
-            <CellActions :track="item" />
-          </tr>
-        </template>
-      </tbody>
-    </BaseTable>
+        </tbody>
+      </BaseTable>
+    </template>
+    <template v-if="files.files">
+      <div class="row">
+        <div class="col">
+          <TrackList :tracks="files.files" no-album />
+        </div>
+      </div>
+    </template>
   </ContentLoader>
 </template>
 
@@ -61,6 +51,8 @@
   import { storeToRefs } from 'pinia'
   import { useFilesStore } from '@/library/files/store'
   import { Track, UnsupportedOperationError } from '@/shared/api'
+  import AlbumList from '@/library/album/AlbumList.vue'
+  import TrackList from '@/library/track/TrackList.vue'
   import BaseTable from '@/library/track/BaseTable.vue'
   import BaseTableHead from '@/library/track/BaseTableHead.vue'
   import CellTrackNumber from '@/library/track/CellTrackNumber.vue'
@@ -69,11 +61,13 @@
 
   export default defineComponent({
     components: {
+      AlbumList,
       BaseTable,
       BaseTableHead,
       CellTrackNumber,
       CellTitle,
-      CellActions
+      CellActions,
+      TrackList
     },
     props: {
       pathID: { type: String, default: '' }
