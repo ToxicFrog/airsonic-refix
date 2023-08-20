@@ -106,6 +106,26 @@ export const playerModule: Module<State, any> = {
       }
       persistQueue(state)
     },
+    // Take src from its current position in the queue and place it immediately
+    // after dst.
+    moveAfterInQueue(state, [src, dst]) {
+      // First we copy src into its destination position.
+      state.queue.splice(dst + 1, 0, state.queue[src])
+      // Now delete it from its old position in the queue. This takes some care
+      // because the insertion may have changed its index.
+      if (src > dst) {
+        state.queue.splice(src + 1, 1)
+      } else {
+        state.queue.splice(src, 1)
+      }
+      // If this changed the position of the currently playing song, correct it.
+      if (state.queueIndex === src) {
+        state.queueIndex = dst + 1
+      } else if (state.queueIndex > dst && state.queueIndex < src) {
+        state.queueIndex++
+      }
+      persistQueue(state)
+    },
     clearQueue(state) {
       if (state.queueIndex >= 0) {
         state.queue = [state.queue[state.queueIndex]]

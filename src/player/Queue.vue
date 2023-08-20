@@ -28,7 +28,8 @@
       <tbody class="text-break">
         <tr v-for="(item, index) in tracks" :key="index"
             :class="{'active': index === queueIndex}"
-            :draggable="true" @dragstart="dragstart(item.id, $event)"
+            :draggable="true" @dragstart="onDragStart(index, item.id, $event)"
+            @dragenter.prevent @dragover="onDragOver($event)" @drop="onDrop(index, item, $event)"
             @click="play(index)">
           <CellTrackNumber :active="index === queueIndex && isPlaying" :value="item.track" />
           <CellTitle :track="item" />
@@ -87,8 +88,22 @@
         }
         return this.$store.dispatch('player/playTrackListIndex', { index })
       },
-      dragstart(id: string, event: any) {
+      onDragStart(index: number, id: string, event: any) {
         event.dataTransfer.setData('application/x-track-id', id)
+        event.dataTransfer.setData('application/x-queue-index', index)
+      },
+      onDragOver(event: DragEvent) {
+        if (event.dataTransfer?.types.includes('application/x-queue-index')) {
+          event.dataTransfer.dropEffect = 'copy'
+          event.preventDefault()
+        }
+      },
+      async onDrop(dst: number, item: any, event: any) {
+        event.preventDefault()
+        const src = Number(event.dataTransfer.getData('application/x-queue-index'))
+        if (src === dst) return // Self-dropping does nothing
+        if (src === dst + 1) return // src is already immediately after dst
+        return this.$store.commit('player/moveAfterInQueue', [src, dst])
       },
       remove(idx: number) {
         return this.$store.commit('player/removeFromQueue', idx)
