@@ -419,11 +419,17 @@ export class API {
       if (ch.isDir) {
         if (!fd.dirs) fd.dirs = <FileDirectory[]>[]
         if (ch && ch?.id) fd.dirs.push({ id: ch.id, name: ch.title, isTop: false })
+        // TODO: fetch contents and if there is a non-dir child with albumId set,
+        // fetch the album data into this.
       } else {
-        // check duration of track for ignoring files maked by Mac OS index files, as example: `._Artist - Trackname.mp3`
+        // TODO: check duration of track for ignoring files maked by Mac OS index files, as example: `._Artist - Trackname.mp3`
+        // TODO: if the tracks have a common albumId, fetch album data and display in a header
+        // similar to AlbumDetails; hoist that out into a common template.
         if (ch?.type !== 'music' || !ch?.duration) return
         if (!fd.files) fd.files = <File[]>[]
-        if (ch && ch?.id) fd.files.push({ name: ch.path.split('/').pop(), id: ch.id, title: ch.title, duration: ch.duration, favourite: false, url: this.getStreamUrl(ch.id) }) // , isVideo: ch.isVideo, parent: ch.parent, path: ch.path, type: ch.type })
+        if (ch && ch?.id) {
+          fd.files.push(this.normalizeFile(ch))
+        }
       }
     })
   }
@@ -487,6 +493,23 @@ export class API {
 
   private normalizeTrack(item: any): Track {
     return {
+      id: item.id,
+      title: item.title,
+      duration: item.duration,
+      favourite: !!item.starred,
+      track: item.track,
+      album: item.album,
+      albumId: item.albumId,
+      artist: item.artist,
+      artistId: item.artistId,
+      url: this.getStreamUrl(item.id),
+      image: this.getCoverArtUrl(item),
+    }
+  }
+
+  private normalizeFile(item: any): File {
+    return {
+      name: item.title ? null : item.path.split('/').pop(),
       id: item.id,
       title: item.title,
       duration: item.duration,
